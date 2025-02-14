@@ -1,11 +1,10 @@
-import OnboardCustomer from '@/components/OnboardCustomer'
+import UserTable from '@/components/UserTable'
 import React from 'react'
-
 
 const Home = () => {
   return (
       <div>
-          <OnboardCustomer />
+          <UserTable />
     </div>
   )
 }

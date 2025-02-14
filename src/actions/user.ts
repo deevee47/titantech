@@ -84,3 +84,116 @@ export async function createUser(data: User) {
     await prisma.$disconnect();
   }
 }
+
+type GetUsersParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: 'firstName' | 'lastName' | 'email' | 'companyName' | 'investmentAmount' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  paymentStatus?: boolean;
+};
+
+export async function getUsers({
+  page = 1,
+  limit = 10,
+  search = "",
+  sortBy = "createdAt",
+  sortOrder = "desc",
+  paymentStatus
+}: GetUsersParams = {}) {
+  try {
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Prepare filter conditions
+    const where = {
+      AND: [
+        // Search condition
+        search ? {
+          OR: [
+            { firstName: { contains: search, mode: "insensitive" as const } },
+            { lastName: { contains: search, mode: "insensitive" as const } },
+            { email: { contains: search, mode: "insensitive" as const } },
+            { companyName: { contains: search, mode: "insensitive" as const } },
+            { phone: { contains: search } }
+          ]
+        } : {},
+        // Payment status filter
+        typeof paymentStatus === 'boolean' ? { paymentDone: paymentStatus } : {}
+      ]
+    };
+
+    // Get total count for pagination
+    const total = await prisma.user.count({ where });
+
+    // Get users with pagination, sorting, and filtering
+    const users = await prisma.user.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        companyName: true,
+        address: true,
+        investmentAmount: true,
+        paymentDone: true,
+        remark: true,
+        createdAt: true,
+        updatedAt: true,
+        // Exclude sensitive URLs from default select
+        aadharFrontUrl: false,
+        aadharBackUrl: false,
+        panCardUrl: false,
+      },
+    });
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      success: true,
+      data: {
+        users,
+        metadata: {
+          total,
+          page,
+          limit,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+        },
+      },
+    };
+  } catch (error: any) {
+    console.error("Error fetching users:", error);
+    return {
+      success: false,
+      error: "Failed to fetch users",
+      message: error.message,
+    };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// Example usage:
+/*
+const response = await getUsers({
+  page: 1,
+  limit: 10,
+  search: "john",
+  sortBy: "createdAt",
+  sortOrder: "desc",
+  paymentStatus: true
+});
+*/
