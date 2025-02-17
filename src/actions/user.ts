@@ -16,6 +16,7 @@ type User = {
   investmentAmount: number;
   paymentDone?: boolean;
   remark?: string;
+  customerNote?: string;
 };
 
 export async function createUser(data: User) {
@@ -64,6 +65,7 @@ export async function createUser(data: User) {
         investmentAmount: data.investmentAmount,
         paymentDone: data.paymentDone || false,
         remark: data.remark || null,
+        customerNote: data.customerNote || null,
       },
     });
 
@@ -146,6 +148,7 @@ export async function getUsers({
         investmentAmount: true,
         paymentDone: true,
         remark: true,
+        customerNote: true,
         createdAt: true,
         updatedAt: true,
         // Exclude sensitive URLs from default select
@@ -185,6 +188,27 @@ export async function getUsers({
     await prisma.$disconnect();
   }
 }
+
+
+export async function updateUserRemark(userId: string, remark: string) {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { remark },
+    });
+
+    return {
+      success: true,
+      user: updatedUser,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update remark",
+    };
+  }
+}
+
 
 // Example usage:
 /*

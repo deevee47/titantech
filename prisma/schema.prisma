@@ -35,6 +35,7 @@ model User {
   investmentAmount Float
   paymentDone     Boolean  @default(false)
   remark          String?
+  customerNote     String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

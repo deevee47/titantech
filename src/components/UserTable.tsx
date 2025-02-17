@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { getUsers } from "@/actions/user";
+import { getUsers, updateUserRemark } from "@/actions/user";
 import {
   ChevronLeft,
   ChevronRight,
@@ -27,6 +28,10 @@ import {
   ArrowUpDown,
   Search,
   SlidersHorizontal,
+  FileText,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import { debounce } from "lodash";
 
@@ -39,6 +44,8 @@ type User = {
   companyName: string;
   investmentAmount: number;
   paymentDone: boolean;
+  remark: string | null;
+  customerNote: string | null;
   createdAt: string;
 };
 
@@ -49,6 +56,11 @@ type SortField =
   | "companyName"
   | "investmentAmount"
   | "createdAt";
+
+interface EditState {
+  id: string;
+  value: string;
+}
 
 const SORT_OPTIONS = [
   { label: "Name", value: "firstName" },
@@ -64,20 +76,18 @@ export default function UserTable() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [limit] = useState(10);
   const [sortBy, setSortBy] = useState<SortField>("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [metadata, setMetadata] = useState({
-    total: 0,
-    totalPages: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  });
+  const [editingRemark, setEditingRemark] = useState<EditState | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Debounced search function
   const debouncedSearch = debounce((value: string) => {
     setSearch(value);
-    setPage(1); // Reset to first page on new search
+    setPage(1);
   }, 300);
 
   // Fetch users
@@ -97,7 +107,8 @@ export default function UserTable() {
           ...user,
           createdAt: user.createdAt.toISOString()
         })));
-        setMetadata(response.data.metadata);
+        setTotalItems(response.data.metadata.total);
+        setHasMore(response.data.metadata.hasNextPage);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -105,7 +116,6 @@ export default function UserTable() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchUsers();
   }, [page, search, sortBy, sortOrder]);
@@ -118,7 +128,42 @@ export default function UserTable() {
       setSortBy(field);
       setSortOrder("asc");
     }
-    setPage(1); // Reset to first page on sort change
+    setPage(1);
+  };
+
+  // Handle remark edit
+  const handleEditRemark = (userId: string, currentRemark: string | null) => {
+    setEditingRemark({
+      id: userId,
+      value: currentRemark || "",
+    });
+  };
+
+  // Handle remark save
+  const handleSaveRemark = async (userId: string) => {
+    if (!editingRemark) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await updateUserRemark(userId, editingRemark.value);
+      if (response.success) {
+        setUsers(
+          users.map((user) =>
+            user.id === userId ? { ...user, remark: editingRemark.value } : user
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating remark:", error);
+    } finally {
+      setIsUpdating(false);
+      setEditingRemark(null);
+    }
+  };
+
+  // Handle remark cancel
+  const handleCancelEdit = () => {
+    setEditingRemark(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -134,11 +179,10 @@ export default function UserTable() {
 
   return (
     <div className="space-y-4">
-      {/* Advanced Search and Filters Card */}
+      {/* Search and Filters */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            {/* Search Box with Icon */}
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
@@ -148,7 +192,6 @@ export default function UserTable() {
               />
             </div>
 
-            {/* Sort Controls */}
             <div className="flex gap-2 items-center">
               <SlidersHorizontal className="h-4 w-4 text-gray-500" />
               <Select
@@ -187,7 +230,7 @@ export default function UserTable() {
 
       {/* Results Summary */}
       <div className="text-sm text-gray-500">
-        {loading ? "Looking for results..." : `Found ${metadata.total} users`}
+        {loading ? "Loading results..." : `Found ${totalItems} users`}
       </div>
 
       {/* Table */}
@@ -257,18 +300,20 @@ export default function UserTable() {
                   <ArrowUpDown className="h-4 w-4" />
                 </Button>
               </TableHead>
+              <TableHead>Customer Note</TableHead>
+              <TableHead>Remark</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={9} className="text-center py-10">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={9} className="text-center py-10">
                   No users found
                 </TableCell>
               </TableRow>
@@ -292,6 +337,70 @@ export default function UserTable() {
                     </span>
                   </TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 max-w-[200px]">
+                      <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <span
+                        className="truncate"
+                        title={user.customerNote || "No note"}
+                      >
+                        {user.customerNote || "No note"}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {editingRemark?.id === user.id ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={editingRemark.value}
+                          onChange={(e) =>
+                            setEditingRemark({
+                              ...editingRemark,
+                              value: e.target.value,
+                            })
+                          }
+                          className="h-8 w-[200px]"
+                          disabled={isUpdating}
+                          placeholder="Enter remark..."
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleSaveRemark(user.id)}
+                          disabled={isUpdating}
+                          className="p-1"
+                        >
+                          <Check className="h-4 w-4 text-green-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleCancelEdit}
+                          disabled={isUpdating}
+                          className="p-1"
+                        >
+                          <X className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 max-w-[200px]">
+                        <span
+                          className="truncate"
+                          title={user.remark || "No remark"}
+                        >
+                          {user.remark || "No remark"}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditRemark(user.id, user.remark)}
+                          className="p-1"
+                        >
+                          <Edit2 className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -303,14 +412,14 @@ export default function UserTable() {
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">
           Showing {(page - 1) * limit + 1} to{" "}
-          {Math.min(page * limit, metadata.total)} of {metadata.total} results
+          {Math.min(page * limit, totalItems)} of {totalItems} results
         </p>
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="icon"
             onClick={() => setPage(1)}
-            disabled={!metadata.hasPreviousPage}
+            disabled={page === 1}
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -318,7 +427,7 @@ export default function UserTable() {
             variant="outline"
             size="icon"
             onClick={() => setPage(page - 1)}
-            disabled={!metadata.hasPreviousPage}
+            disabled={page === 1}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -326,15 +435,15 @@ export default function UserTable() {
             variant="outline"
             size="icon"
             onClick={() => setPage(page + 1)}
-            disabled={!metadata.hasNextPage}
+            disabled={!hasMore}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setPage(metadata.totalPages)}
-            disabled={!metadata.hasNextPage}
+            onClick={() => setPage(Math.ceil(totalItems / limit))}
+            disabled={!hasMore}
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>
