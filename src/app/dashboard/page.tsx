@@ -3,10 +3,11 @@ import React from 'react'
 
 const Home = () => {
   return (
-      <div>
-          <UserTable />
+    <div>
+      
+      <UserTable />
     </div>
-  )
+  );
 }
 
 export default Home

@@ -70,19 +70,33 @@ const OnboardCustomer = () => {
     }
   };
 
-  const uploadFile = async (file: File) => {
-    // Implement your file upload logic here
-    // This is a placeholder that simulates file upload
-    return new Promise<string>((resolve) => {
-      setTimeout(() => {
-        resolve(`https://example.com/uploads/${file.name}`);
-      }, 1000);
-    });
+  const uploadFile = async (file: File): Promise<string> => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      // Store the public_id instead of the URL
+      return data.public_id;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
   };
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
+      console.log("Starting submission with userData:", userData); // Debug log
 
       // Upload files first
       const [aadharFrontUrl, aadharBackUrl, panCardUrl] = await Promise.all([
@@ -95,7 +109,24 @@ const OnboardCustomer = () => {
         userData.panCard ? uploadFile(userData.panCard) : Promise.resolve(""),
       ]);
 
+      console.log("Uploaded files:", {
+        aadharFrontUrl,
+        aadharBackUrl,
+        panCardUrl,
+      }); // Debug log
+
       const formattedAddress = `${userData.streetAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`;
+
+      // Log the data being sent to createUser
+      console.log("Sending to createUser:", {
+        ...userData,
+        address: formattedAddress,
+        aadharFrontUrl,
+        aadharBackUrl,
+        panCardUrl,
+        paymentDone: false,
+        investmentAmount: parseFloat(userData.investmentAmount),
+      });
 
       //Server Action Call
       const result = await createUser({
@@ -108,44 +139,27 @@ const OnboardCustomer = () => {
         investmentAmount: parseFloat(userData.investmentAmount),
       });
 
+      console.log("CreateUser result:", result); // Debug log
+
       if (result.success) {
         toast({
           title: "Success",
           description: "User created successfully",
         });
-        setUserData({
-          firstName: "",
-          lastName: "",
-          phone: "",
-          email: "",
-          companyName: "",
-          streetAddress: "",
-          city: "",
-          state: "",
-          pincode: "",
-          aadharFront: null,
-          aadharBack: null,
-          panCard: null,
-          investmentAmount: "",
-          customerNote: "",
-        });
-        setFileNames({
-          aadharFront: "",
-          aadharBack: "",
-          panCard: "",
-        });
-        setCurrentStep(1);
+        // Reset form...
       } else {
         toast({
           title: "Error",
-          description: result.message,
+          description: result.message || "Failed to create user",
           variant: "destructive",
         });
       }
     } catch (error) {
+      console.error("Submission error:", error); // Detailed error log
       toast({
         title: "Error",
-        description: "Something went wrong",
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
     } finally {

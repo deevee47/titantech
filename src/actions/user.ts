@@ -152,9 +152,9 @@ export async function getUsers({
         createdAt: true,
         updatedAt: true,
         // Exclude sensitive URLs from default select
-        aadharFrontUrl: false,
-        aadharBackUrl: false,
-        panCardUrl: false,
+        aadharFrontUrl: true,
+        aadharBackUrl: true,
+        panCardUrl: true,
       },
     });
 

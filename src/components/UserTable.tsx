@@ -34,6 +34,7 @@ import {
   X,
 } from "lucide-react";
 import { debounce } from "lodash";
+import SecureImage from "./SecureImage";
 
 type User = {
   id: string;
@@ -47,6 +48,9 @@ type User = {
   remark: string | null;
   customerNote: string | null;
   createdAt: string;
+  aadharFrontUrl?: string;
+  aadharBackUrl?: string;
+  panCardUrl?: string;
 };
 
 type SortField =
@@ -102,11 +106,15 @@ export default function UserTable() {
         sortOrder,
       });
 
-      if (response.success && response.data) {
+      if (response.data) {
+        console.log("User", response.data);
         setUsers(
           response.data.users.map((user) => ({
             ...user,
             createdAt: user.createdAt.toISOString(),
+            aadharFrontUrl: user.aadharFrontUrl || '',
+            aadharBackUrl: user.aadharBackUrl || '',
+            panCardUrl: user.panCardUrl || ''
           }))
         );
         setTotalItems(response.data.metadata.total);
@@ -180,28 +188,8 @@ export default function UserTable() {
   };
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-transparent relative overflow-hidden">
       {/* Animated background blobs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute w-[500px] h-[500px] rounded-full bg-purple-600/30 blur-3xl"
-          style={{
-            top: "20%",
-            left: "60%",
-            transform: "translate(-50%, -50%)",
-            animation: "blob1 7s infinite ease-in-out",
-          }}
-        />
-        <div
-          className="absolute w-[600px] h-[600px] rounded-full bg-blue-600/20 blur-3xl"
-          style={{
-            top: "60%",
-            left: "30%",
-            transform: "translate(-50%, -50%)",
-            animation: "blob2 8s infinite ease-in-out",
-          }}
-        />
-      </div>
 
       <div className="relative z-10 p-8 space-y-6">
         <h1 className="text-3xl font-bold text-white mb-8">User Management</h1>
@@ -278,8 +266,6 @@ export default function UserTable() {
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </TableHead>
-                  {/* Repeat for other TableHead elements, keeping the same styling */}
-                  {/* ... other table headers ... */}
                   <TableHead className="text-gray-300">
                     <Button
                       variant="ghost"
@@ -305,6 +291,7 @@ export default function UserTable() {
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </TableHead>
+                  <TableHead className="text-gray-300">Documents</TableHead>
                   <TableHead className="text-gray-300">
                     <Button
                       variant="ghost"
@@ -366,6 +353,48 @@ export default function UserTable() {
                       <TableCell className="text-white">{user.phone}</TableCell>
                       <TableCell className="text-white">
                         {user.companyName}
+                      </TableCell>
+                      <TableCell className="text-white">
+                        <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-400">
+                                Aadhar Front:
+                              </span>
+                              {user.aadharFrontUrl && (
+                                <SecureImage
+                                  publicId={user.aadharFrontUrl}
+                                  alt="Aadhar Front"
+                                  type="aadharFront"
+                                />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-400">
+                                Aadhar Back:
+                              </span>
+                              {user.aadharBackUrl && (
+                                <SecureImage
+                                  publicId={user.aadharBackUrl}
+                                  alt="Aadhar Back"
+                                  type="aadharBack"
+                                />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-400">
+                                PAN Card:
+                              </span>
+                              {user.panCardUrl && (
+                                <SecureImage
+                                  publicId={user.panCardUrl}
+                                  alt="PAN Card"
+                                  type="panCard"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell className="text-white">
                         {formatCurrency(user.investmentAmount)}
