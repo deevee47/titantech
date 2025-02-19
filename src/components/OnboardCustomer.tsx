@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { createUser } from "@/actions/user";
 import { Upload } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const OnboardCustomer = () => {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -168,7 +170,7 @@ const OnboardCustomer = () => {
   };
 
   const nextStep = () => {
-    if (currentStep < 2) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -414,16 +416,93 @@ const OnboardCustomer = () => {
     </div>
   );
 
+  const renderTermsAndConditions = () => (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="h-64 overflow-y-auto p-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg">
+          <div className="space-y-4 text-gray-300">
+            <h3 className="font-semibold">1. Introduction</h3>
+            <p>
+              These Terms and Conditions govern your use of our investment
+              services. By proceeding, you agree to be bound by these terms.
+            </p>
+
+            <h3 className="font-semibold">2. Investment Risks</h3>
+            <p>
+              All investments carry risks. Past performance is not indicative of
+              future results. You should carefully consider your investment
+              objectives, risks, and capabilities before investing.
+            </p>
+
+            <h3 className="font-semibold">3. KYC Requirements</h3>
+            <p>
+              You agree to provide accurate and up-to-date documentation for
+              Know Your Customer (KYC) verification. This includes your Aadhar
+              card, PAN card, and other required documents.
+            </p>
+
+            <h3 className="font-semibold">4. Privacy Policy</h3>
+            <p>
+              We collect and process your personal information in accordance
+              with our Privacy Policy. Your information will be handled securely
+              and used only for legitimate business purposes.
+            </p>
+
+            <h3 className="font-semibold">5. Investment Terms</h3>
+            <p>
+              The minimum investment amount may vary based on the investment
+              product. Returns are subject to market conditions and are not
+              guaranteed.
+            </p>
+
+            <h3 className="font-semibold">6. Withdrawal Policy</h3>
+            <p>
+              Withdrawals are subject to applicable lock-in periods and
+              processing times. Early withdrawals may incur penalties as
+              specified in the investment product terms.
+            </p>
+
+            <h3 className="font-semibold">7. Communication</h3>
+            <p>
+              You agree to receive communications from us regarding your
+              investment, including but not limited to statements, updates, and
+              regulatory notices.
+            </p>
+
+            <h3 className="font-semibold">8. Governing Law</h3>
+            <p>
+              These terms are governed by applicable local and national laws.
+              Any disputes will be resolved in accordance with these laws.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="terms"
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            className="border-white/20 data-[state=checked]:bg-white data-[state=checked]:text-black"
+          />
+          <Label htmlFor="terms" className="text-gray-300">
+            I have read and agree to the Terms and Conditions
+          </Label>
+        </div>
+      </div>
+    </div>
+  );
+
   const stepTitles = {
     1: "Personal Information",
     2: "Documents & Investment",
+    3: "Terms & Conditions",
   };
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div
-          className="absolute w-[500px] h-[500px] rounded-full bg-purple-600/30 blur-3xl"
+          className="absolute w-96 h-96 rounded-full bg-purple-600/30 blur-3xl"
           style={{
             top: "20%",
             left: "60%",
@@ -432,7 +511,7 @@ const OnboardCustomer = () => {
           }}
         />
         <div
-          className="absolute w-[600px] h-[600px] rounded-full bg-blue-600/20 blur-3xl"
+          className="absolute w-96 h-96 rounded-full bg-blue-600/20 blur-3xl"
           style={{
             top: "60%",
             left: "30%",
@@ -449,7 +528,7 @@ const OnboardCustomer = () => {
               {stepTitles[currentStep as keyof typeof stepTitles]}
             </CardTitle>
             <div className="flex justify-center space-x-2">
-              {[1, 2].map((step) => (
+              {[1, 2, 3].map((step) => (
                 <div
                   key={step}
                   className={`w-2 h-2 rounded-full ${
@@ -464,6 +543,7 @@ const OnboardCustomer = () => {
           <CardContent className="space-y-6">
             {currentStep === 1 && renderPersonalInfo()}
             {currentStep === 2 && renderDocumentsAndInvestment()}
+            {currentStep === 3 && renderTermsAndConditions()}
 
             <div className="flex justify-between space-x-4 pt-4">
               <Button
@@ -474,7 +554,7 @@ const OnboardCustomer = () => {
               >
                 Previous
               </Button>
-              {currentStep < 2 ? (
+              {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
                   className="w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal"
@@ -484,8 +564,8 @@ const OnboardCustomer = () => {
               ) : (
                 <Button
                   onClick={handleSubmit}
-                  disabled={loading}
-                  className="w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal"
+                  disabled={loading || !acceptedTerms}
+                  className="w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal disabled:opacity-50"
                 >
                   {loading ? "Processing..." : "Complete"}
                 </Button>
