@@ -32,6 +32,7 @@ model User {
   aadharFrontUrl  String
   aadharBackUrl   String
   panCardUrl      String
+  calendlyLink    String
   investmentAmount Float
   paymentDone     Boolean  @default(false)
   remark          String?
