@@ -8,10 +8,11 @@ import { createUser } from "@/actions/user";
 // Update these imports with absolute paths
 import PersonalInfoStep from "@/components/onboarding/PersonalInfoStep";
 import DocumentsStep from "@/components/onboarding/DocumentsStep";
+import CalendlyStep from "@/components/onboarding/CalendlyStep";
 import TermsStep from "@/components/onboarding/TermsStep";
 import StepIndicator from "@/components/onboarding/StepIndicator";
 
-// Define the user data type
+// Define the user data type with calendlyLink
 type UserData = {
   firstName: string;
   lastName: string;
@@ -27,6 +28,7 @@ type UserData = {
   panCard: File | null;
   investmentAmount: string;
   customerNote: string;
+  calendlyLink: string; // Added calendlyLink
 };
 
 // Define validation errors type
@@ -54,6 +56,7 @@ const OnboardCustomer = () => {
     panCard: null,
     investmentAmount: "",
     customerNote: "",
+    calendlyLink: "", // Initialize calendlyLink
   });
 
   const [fileNames, setFileNames] = useState({
@@ -110,6 +113,21 @@ const OnboardCustomer = () => {
           [field]: undefined
         }));
       }
+    }
+  };
+
+  const handleCalendlyUrlChange = (url: string) => {
+    setUserData(prev => ({
+      ...prev,
+      calendlyLink: url
+    }));
+    
+    // Clear error if it exists
+    if (errors.calendlyLink) {
+      setErrors(prev => ({
+        ...prev,
+        calendlyLink: undefined
+      }));
     }
   };
 
@@ -190,9 +208,32 @@ const OnboardCustomer = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateCalendly = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    if (!userData.calendlyLink) {
+      newErrors.calendlyLink = "Please schedule a consultation before proceeding";
+      setErrors(newErrors);
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
+
+      // Final validation
+      if (!userData.calendlyLink) {
+        toast({
+          title: "Missing Appointment",
+          description: "Please schedule a consultation before completing registration",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
 
       // Upload files first
       const [aadharFrontUrl, aadharBackUrl, panCardUrl] = await Promise.all([
@@ -207,7 +248,7 @@ const OnboardCustomer = () => {
 
       const formattedAddress = `${userData.streetAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`;
 
-      // Server Action Call - without calendlyLink
+      // Server Action Call - with calendlyLink
       const result = await createUser({
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -218,6 +259,7 @@ const OnboardCustomer = () => {
         aadharFrontUrl,
         aadharBackUrl,
         panCardUrl,
+        calendlyLink: userData.calendlyLink, // Include calendlyLink
         paymentDone: false,
         investmentAmount: parseFloat(userData.investmentAmount || "0"),
         customerNote: userData.customerNote,
@@ -257,9 +299,13 @@ const OnboardCustomer = () => {
       isValid = validatePersonalInfo();
     } else if (currentStep === 2) {
       isValid = validateDocuments();
+    } else if (currentStep === 3) {
+      isValid = validateCalendly();
+    } else {
+      isValid = true;
     }
     
-    if (isValid && currentStep < 3) {
+    if (isValid && currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else if (!isValid) {
       // Show toast for validation errors
@@ -280,7 +326,8 @@ const OnboardCustomer = () => {
   const stepTitles = {
     1: "Personal Information",
     2: "Documents & Investment",
-    3: "Terms & Conditions",
+    3: "Schedule Consultation", // New step
+    4: "Terms & Conditions",
   };
 
   return (
@@ -313,7 +360,7 @@ const OnboardCustomer = () => {
             <CardTitle className="text-3xl font-bold text-center text-white">
               {stepTitles[currentStep as keyof typeof stepTitles]}
             </CardTitle>
-            <StepIndicator currentStep={currentStep} totalSteps={3} />
+            <StepIndicator currentStep={currentStep} totalSteps={4} />
           </CardHeader>
           
           <CardContent className="space-y-6">
@@ -334,6 +381,15 @@ const OnboardCustomer = () => {
               />
             )}
             {currentStep === 3 && (
+              <CalendlyStep
+                              onCalendlyUrlChange={handleCalendlyUrlChange}
+                              defaultCalendlyUrl={userData.calendlyLink} onPrevious={function (): void {
+                                  throw new Error("Function not implemented.");
+                              } } onNext={function (): void {
+                                  throw new Error("Function not implemented.");
+                              } }              />
+            )}
+            {currentStep === 4 && (
               <TermsStep
                 acceptedTerms={acceptedTerms}
                 setAcceptedTerms={setAcceptedTerms}
@@ -349,10 +405,11 @@ const OnboardCustomer = () => {
               >
                 Previous
               </Button>
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <Button
                   onClick={nextStep}
                   className="w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal"
+                  disabled={currentStep === 3 && !userData.calendlyLink}
                 >
                   Next
                 </Button>
