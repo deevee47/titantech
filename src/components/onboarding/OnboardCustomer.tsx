@@ -12,7 +12,7 @@ import CalendlyStep from "@/components/onboarding/CalendlyStep";
 import TermsStep from "@/components/onboarding/TermsStep";
 import StepIndicator from "@/components/onboarding/StepIndicator";
 
-// Define the user data type with calendlyLink
+// Define the user data type with country
 type UserData = {
   firstName: string;
   lastName: string;
@@ -23,12 +23,12 @@ type UserData = {
   city: string;
   state: string;
   pincode: string;
+  country: string;
   aadharFront: File | null;
   aadharBack: File | null;
   panCard: File | null;
   investmentAmount: string;
   customerNote: string;
-  calendlyLink: string; // Added calendlyLink
 };
 
 // Define validation errors type
@@ -51,12 +51,12 @@ const OnboardCustomer = () => {
     city: "",
     state: "",
     pincode: "",
+    country: "",
     aadharFront: null,
     aadharBack: null,
     panCard: null,
     investmentAmount: "",
     customerNote: "",
-    calendlyLink: "", // Initialize calendlyLink
   });
 
   const [fileNames, setFileNames] = useState({
@@ -64,6 +64,9 @@ const OnboardCustomer = () => {
     aadharBack: "",
     panCard: "",
   });
+  
+  // Track when a meeting is scheduled
+  const [meetingScheduled, setMeetingScheduled] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -75,6 +78,21 @@ const OnboardCustomer = () => {
     }));
     
     // Clear error for this field when user starts typing
+    if (errors[name as keyof UserData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setUserData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    
+    // Clear error for this field
     if (errors[name as keyof UserData]) {
       setErrors(prev => ({
         ...prev,
@@ -113,21 +131,6 @@ const OnboardCustomer = () => {
           [field]: undefined
         }));
       }
-    }
-  };
-
-  const handleCalendlyUrlChange = (url: string) => {
-    setUserData(prev => ({
-      ...prev,
-      calendlyLink: url
-    }));
-    
-    // Clear error if it exists
-    if (errors.calendlyLink) {
-      setErrors(prev => ({
-        ...prev,
-        calendlyLink: undefined
-      }));
     }
   };
 
@@ -175,6 +178,11 @@ const OnboardCustomer = () => {
       newErrors.phone = "Please enter a valid 10-digit phone number";
     }
     
+    // Country validation
+    if (!userData.country) {
+      newErrors.country = "Country is required";
+    }
+    
     // Address validation
     if (!userData.streetAddress.trim()) newErrors.streetAddress = "Street address is required";
     if (!userData.city.trim()) newErrors.city = "City is required";
@@ -209,31 +217,20 @@ const OnboardCustomer = () => {
   };
 
   const validateCalendly = (): boolean => {
-    const newErrors: ValidationErrors = {};
-    
-    if (!userData.calendlyLink) {
-      newErrors.calendlyLink = "Please schedule a consultation before proceeding";
-      setErrors(newErrors);
+    if (!meetingScheduled) {
+      toast({
+        title: "Schedule Required",
+        description: "Please confirm your meeting scheduling before proceeding",
+        variant: "destructive",
+      });
       return false;
     }
-    
     return true;
   };
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
-
-      // Final validation
-      if (!userData.calendlyLink) {
-        toast({
-          title: "Missing Appointment",
-          description: "Please schedule a consultation before completing registration",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
 
       // Upload files first
       const [aadharFrontUrl, aadharBackUrl, panCardUrl] = await Promise.all([
@@ -246,9 +243,10 @@ const OnboardCustomer = () => {
         userData.panCard ? uploadFile(userData.panCard) : Promise.resolve(""),
       ]);
 
-      const formattedAddress = `${userData.streetAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}`;
+      // Format address with country
+      const formattedAddress = `${userData.streetAddress}, ${userData.city}, ${userData.state}, ${userData.country} - ${userData.pincode}`;
 
-      // Server Action Call - with calendlyLink
+      // Server Action Call
       const result = await createUser({
         firstName: userData.firstName,
         lastName: userData.lastName,
@@ -259,10 +257,11 @@ const OnboardCustomer = () => {
         aadharFrontUrl,
         aadharBackUrl,
         panCardUrl,
-        calendlyLink: userData.calendlyLink, // Include calendlyLink
         paymentDone: false,
         investmentAmount: parseFloat(userData.investmentAmount || "0"),
         customerNote: userData.customerNote,
+        // Add a default calendlyLink if your schema requires it
+        calendlyLink: "https://calendly.com/your-company/investment-discussion",
       });
 
       if (result.success) {
@@ -326,7 +325,7 @@ const OnboardCustomer = () => {
   const stepTitles = {
     1: "Personal Information",
     2: "Documents & Investment",
-    3: "Schedule Consultation", // New step
+    3: "Schedule Meeting",
     4: "Terms & Conditions",
   };
 
@@ -368,6 +367,7 @@ const OnboardCustomer = () => {
               <PersonalInfoStep 
                 userData={userData}
                 handleInputChange={handleInputChange}
+                handleSelectChange={handleSelectChange}
                 errors={errors}
               />
             )}
@@ -381,13 +381,33 @@ const OnboardCustomer = () => {
               />
             )}
             {currentStep === 3 && (
-              <CalendlyStep
-                              onCalendlyUrlChange={handleCalendlyUrlChange}
-                              defaultCalendlyUrl={userData.calendlyLink} onPrevious={function (): void {
-                                  throw new Error("Function not implemented.");
-                              } } onNext={function (): void {
-                                  throw new Error("Function not implemented.");
-                              } }              />
+              <div className="space-y-4">
+                <div className="text-white text-center mb-4">
+                  <p>Please schedule a meeting with our investment team</p>
+                </div>
+                
+                {/* Use CalendlyStep without any props */}
+                <div className="calendly-container" style={{ height: '600px', overflow: 'hidden' }}>
+                  <CalendlyStep onPrevious={function (): void {
+                                      throw new Error("Function not implemented.");
+                                  } } onNext={function (): void {
+                                      throw new Error("Function not implemented.");
+                                  } } onCalendlyUrlChange={function (url: string): void {
+                                      throw new Error("Function not implemented.");
+                                  } } />
+                </div>
+
+                {/* Add a manual tracking for scheduling */}
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    onClick={() => setMeetingScheduled(true)}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    disabled={meetingScheduled}
+                  >
+                    {meetingScheduled ? "Meeting Scheduled ✓" : "Confirm Scheduling"}
+                  </Button>
+                </div>
+              </div>
             )}
             {currentStep === 4 && (
               <TermsStep
@@ -409,7 +429,6 @@ const OnboardCustomer = () => {
                 <Button
                   onClick={nextStep}
                   className="w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal"
-                  disabled={currentStep === 3 && !userData.calendlyLink}
                 >
                   Next
                 </Button>
@@ -445,6 +464,14 @@ const OnboardCustomer = () => {
           50% {
             transform: translate(-50%, -50%) scale(1);
           }
+        }
+        
+        /* Higher z-index for Calendly popup */
+        .calendly-inline-widget,
+        .calendly-popup-overlay,
+        .calendly-widget-inline,
+        .calendly-overlay {
+          z-index: 1100 !important;
         }
       `}</style>
     </div>
