@@ -1,11 +1,11 @@
-import OnboardCustomer from '@/components/OnboardCustomer'
+"use client"
+import { OnboardCustomer } from '@/components/onboarding'
 import React from 'react'
-
 
 const Home = () => {
   return (
-      <div>
-          <OnboardCustomer />
+    <div>
+      <OnboardCustomer />
     </div>
   )
 }

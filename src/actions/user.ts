@@ -14,6 +14,7 @@ type User = {
   aadharBackUrl: string;
   panCardUrl: string;
   investmentAmount: number;
+  calendlyLink?: string; // Make it optional in TypeScript
   paymentDone?: boolean;
   remark?: string;
   customerNote?: string;
@@ -50,7 +51,7 @@ export async function createUser(data: User) {
       };
     }
 
-    // Create user in database
+    // Create user in database with default calendlyLink if not provided
     const user = await prisma.user.create({
       data: {
         firstName: data.firstName,
@@ -63,6 +64,7 @@ export async function createUser(data: User) {
         aadharBackUrl: data.aadharBackUrl,
         panCardUrl: data.panCardUrl,
         investmentAmount: data.investmentAmount,
+        calendlyLink: data.calendlyLink || "https://calendly.com/default", // Provide default value
         paymentDone: data.paymentDone || false,
         remark: data.remark || null,
         customerNote: data.customerNote || null,
@@ -149,6 +151,7 @@ export async function getUsers({
         paymentDone: true,
         remark: true,
         customerNote: true,
+        calendlyLink: true, // Include in select
         createdAt: true,
         updatedAt: true,
         // Exclude sensitive URLs from default select
@@ -208,16 +211,3 @@ export async function updateUserRemark(userId: string, remark: string) {
     };
   }
 }
-
-
-// Example usage:
-/*
-const response = await getUsers({
-  page: 1,
-  limit: 10,
-  search: "john",
-  sortBy: "createdAt",
-  sortOrder: "desc",
-  paymentStatus: true
-});
-*/
