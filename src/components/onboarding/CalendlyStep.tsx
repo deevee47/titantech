@@ -20,12 +20,10 @@ const CalendlyStep: React.FC<CalendlyStepProps> = ({
   const [isAppointmentScheduled, setIsAppointmentScheduled] = useState(false);
   const [calendlyEventUrl, setCalendlyEventUrl] = useState(defaultCalendlyUrl);
   
-  // Calendly event listener setup
   useEffect(() => {
     const handleCalendlyEvent = (e: any) => {
       if (e.data.event && e.data.event.indexOf("calendly") === 0) {
         if (e.data.event === "calendly.event_scheduled") {
-          // Extract the event URL from the Calendly response
           const eventUrl = e.data.payload?.event?.uri || "";
           if (eventUrl) {
             setCalendlyEventUrl(eventUrl);
@@ -44,9 +42,9 @@ const CalendlyStep: React.FC<CalendlyStepProps> = ({
   }, [onCalendlyUrlChange]);
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto mb-8 ">
       <CardContent className="p-6">
-        <div className="mb-6">
+        <div className="mb-4">
           <h2 className="text-2xl font-bold text-center">Schedule a Consultation</h2>
           <p className="text-center text-gray-600 mt-2">
             Select a convenient time for your investment consultation
@@ -68,7 +66,7 @@ const CalendlyStep: React.FC<CalendlyStepProps> = ({
             </p>
           </div>
         ) : (
-          <div className="mb-6 h-[600px]">
+          <div className="h-[500px] mb-4">
             <InlineWidget
               url={process.env.NEXT_PUBLIC_CALENDLY_URL || "https://calendly.com/your-calendly-link"}
               styles={{
@@ -85,23 +83,7 @@ const CalendlyStep: React.FC<CalendlyStepProps> = ({
           </div>
         )}
 
-        <div className="flex justify-between mt-6">
-          <Button 
-            variant="outline" 
-            onClick={onPrevious}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" /> Previous
-          </Button>
-          
-          <Button
-            onClick={onNext}
-            className="flex items-center gap-2"
-            disabled={!isAppointmentScheduled && !calendlyEventUrl}
-          >
-            Next <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+        
       </CardContent>
     </Card>
   );
