@@ -13,9 +13,9 @@ const TermsStep: React.FC<TermsStepProps> = ({
   setAcceptedTerms,
 }) => {
   return (
-    <div className="flex flex-col items-start p-8 border border-gray-700 rounded-lg bg-gray-950 text-gray-300 shadow-lg">
+    <div className="flex flex-col items-start p-4 border border-gray-700 rounded-lg bg-gray-950 text-gray-300 shadow-lg">
       <div
-        className="w-full h-[600px] p-6 overflow-y-auto border border-gray-800 rounded-md bg-gray-900/80 backdrop-blur-md"
+        className="w-full h-[500px] p-6 overflow-y-auto border border-gray-800 rounded-md bg-gray-900/80 backdrop-blur-md"
         style={{
           scrollbarWidth: "thin",
           scrollbarColor: "#5c2ea7 #1a1a1a",

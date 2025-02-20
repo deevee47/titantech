@@ -24,31 +24,31 @@ export const WelcomeScreen = ({ onContinue }: { onContinue: () => void }) => {
           }}
         />
       </div>
-      
+
       <Card className="max-w-2xl mx-auto bg-black/40 backdrop-blur-md border border-white/10 w-full m-4">
         <CardContent className="p-8 space-y-6">
           <div className="space-y-4 text-center">
-            <div className="inline-block">
-              <span className="text-5xl font-bold text-white">Welcome</span>
+            <div className="inline-block mb-8">
+              <span className="text-5xl font-bold  text-white">WELCOME</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">
+            <h1 className="text-3xl text-left md:text-3xl font-bold text-white">
               Your Information is Safe & Secure with TITANTECH INVESTMENTS
             </h1>
-            <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-              At TITANTECH INVESTMENTS, we prioritise your privacy and data security. All
-              information you provide, including personal details and documents, is encrypted
-              and securely stored in our protected database. We follow strict compliance
-              measures to ensure confidentiality and prevent unauthorized access.
+            <p className="text-gray-300 text-left text-sm md:text-base leading-relaxed">
+              At TITANTECH INVESTMENTS, we prioritise your privacy and data
+              security. All information you provide, including personal details
+              and documents, is encrypted and securely stored in our protected
+              database. We follow strict compliance measures to ensure
+              confidentiality and prevent unauthorized access.
             </p>
           </div>
-          
-          <div className="flex justify-center pt-4">
+
+          <div className="flex justify-center pt-6">
             <Button
               onClick={onContinue}
               className="bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal w-full max-w-xs"
             >
               Continue
-              
             </Button>
           </div>
         </CardContent>
