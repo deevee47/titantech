@@ -96,7 +96,7 @@ const OnboardCustomer = () => {
             <StepIndicator currentStep={currentStep} totalSteps={4} />
           </CardHeader>
           
-          <CardContent className="space-y-6 flex items-center justify-center flex-col">
+          <CardContent className="p-6">
             {currentStep === 1 && (
               <PersonalInfoStep
                 userData={userData}

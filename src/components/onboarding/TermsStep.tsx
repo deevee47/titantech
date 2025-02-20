@@ -44,14 +44,14 @@ const TermsStep: React.FC<TermsStepProps> = ({
 
           `}
         </style>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           1. Introduction
         </h2>
         <p className="mb-3 text-sm text-gray-400">
           These Terms and Conditions govern your use of our investment services.
           By proceeding, you agree to be bound by these terms.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           2. Investment Risks
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -59,7 +59,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           future results. You should carefully consider your investment
           objectives, risks, and capabilities before investing.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           3. KYC Requirements
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -67,7 +67,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           Your Customer (KYC) verification. This includes your Aadhar card, PAN
           card, and other required documents.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           4. Privacy Policy
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -75,7 +75,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           our Privacy Policy. Your information will be handled securely and used
           only for legitimate business purposes.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           5. Investment Terms
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -83,7 +83,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           product. Returns are subject to market conditions and are not
           guaranteed.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           6. Withdrawal Policy
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -91,7 +91,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           times. Early withdrawals may incur penalties as specified in the
           investment product terms.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           7. Communication
         </h2>
         <p className="mb-3 text-sm text-gray-400">
@@ -99,7 +99,7 @@ const TermsStep: React.FC<TermsStepProps> = ({
           including but not limited to statements, updates, and regulatory
           notices.
         </p>
-        <h2 className="text-lg font-semibold text-purple-500">
+        <h2 className="text-lg font-semibold text-white">
           8. Governing Law
         </h2>
         <p className="mb-3 text-sm text-gray-400">
