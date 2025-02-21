@@ -22,8 +22,20 @@ type User = {
 
 export async function createUser(data: User) {
   try {
+    // Validate payload
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return {
+        success: false,
+        message: "Invalid user data provided",
+        error: "VALIDATION_ERROR",
+      };
+    }
+
+    // Extract data from the first element if it's wrapped in an array
+    const userData = Array.isArray(data) ? data[0] : data;
+
     // Basic validation
-    if (!data.firstName || !data.lastName || !data.phone || !data.email) {
+    if (!userData.firstName || !userData.lastName || !userData.phone || !userData.email) {
       return {
         success: false,
         message: "Required fields are missing",
@@ -31,43 +43,23 @@ export async function createUser(data: User) {
       };
     }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
-      return {
-        success: false,
-        message: "Invalid email format",
-        error: "VALIDATION_ERROR",
-      };
-    }
-
-    // Phone number validation (basic example - modify as per your requirements)
-    const phoneRegex = /^\d{10}$/;
-    if (!phoneRegex.test(data.phone)) {
-      return {
-        success: false,
-        message: "Invalid phone number format",
-        error: "VALIDATION_ERROR",
-      };
-    }
-
-    // Create user in database with default calendlyLink if not provided
+    // Create user in database with required calendlyLink
     const user = await prisma.user.create({
       data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        email: data.email,
-        companyName: data.companyName,
-        address: data.address,
-        aadharFrontUrl: data.aadharFrontUrl,
-        aadharBackUrl: data.aadharBackUrl,
-        panCardUrl: data.panCardUrl,
-        investmentAmount: data.investmentAmount,
-        calendlyLink: data.calendlyLink || "https://calendly.com/default", // Provide default value
-        paymentDone: data.paymentDone || false,
-        remark: data.remark || null,
-        customerNote: data.customerNote || null,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone,
+        email: userData.email,
+        companyName: userData.companyName,
+        address: userData.address,
+        aadharFrontUrl: userData.aadharFrontUrl,
+        aadharBackUrl: userData.aadharBackUrl,
+        panCardUrl: userData.panCardUrl,
+        calendlyLink: "https://calendly.com/default", // Add a default or generate dynamic link
+        investmentAmount: userData.investmentAmount,
+        paymentDone: false,
+        remark: null,
+        customerNote: userData.customerNote || null,
       },
     });
 
@@ -76,9 +68,9 @@ export async function createUser(data: User) {
       message: "User created successfully",
       user,
     };
+
   } catch (error: any) {
     console.error("Error creating user:", error);
-
     return {
       success: false,
       message: "Failed to create user",

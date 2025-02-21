@@ -2,7 +2,30 @@ import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { createUser } from "@/actions/user";
 import { UserData, ValidationErrors, FileNames } from '@/types/onboarding';
+async function uploadFiles(formData: FormData) {
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Upload failed');
+    }
+
+    return {
+      success: true,
+      urls: data.urls,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || 'Failed to upload files',
+    };
+  }
+}
 export const useOnboarding = () => {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -71,6 +94,72 @@ export const useOnboarding = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      if (!userData.aadharFront || !userData.aadharBack || !userData.panCard) {
+        throw new Error('Please upload all required documents');
+      }
+
+      // Format address
+      const formattedAddress = `${userData.streetAddress}, ${userData.city}, ${userData.state} - ${userData.pincode}, ${userData.country}`;
+
+      // Create form data for file upload
+      const formData = new FormData();
+      formData.append('aadharFront', userData.aadharFront);
+      formData.append('aadharBack', userData.aadharBack);
+      formData.append('panCard', userData.panCard);
+
+      // Upload files first
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const uploadResult = await uploadResponse.json();
+
+      if (!uploadResponse.ok || !uploadResult.success) {
+        throw new Error(uploadResult.message || 'Failed to upload files');
+      }
+
+      // Create user payload matching the schema
+      const userPayload = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone,
+        email: userData.email,
+        companyName: userData.companyName,
+        address: formattedAddress,
+        aadharFrontUrl: uploadResult.urls.aadharFront,
+        aadharBackUrl: uploadResult.urls.aadharBack,
+        panCardUrl: uploadResult.urls.panCard,
+        investmentAmount: parseFloat(userData.investmentAmount),
+        customerNote: userData.customerNote || undefined
+      };
+
+      const createUserResponse = await createUser(userPayload);
+
+      if (!createUserResponse.success) {
+        throw new Error(createUserResponse.message || 'Failed to create user');
+      }
+
+      toast({
+        title: "Success",
+        description: "Registration completed successfully",
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to complete registration",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     currentStep,
@@ -89,5 +178,6 @@ export const useOnboarding = () => {
     handleInputChange,
     handleSelectChange,
     handleFileChange,
+    handleSubmit, // Make sure this is included in the return object
   };
 };

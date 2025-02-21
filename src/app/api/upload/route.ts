@@ -1,29 +1,32 @@
-import { NextResponse } from "next/server";
-import cloudinary from "@/lib/cloudinary";
+import { NextResponse } from 'next/server';
+import cloudinary from '@/lib/cloudinary';
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const urls: Record<string, string> = {};
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64String = `data:${file.type};base64,${buffer.toString(
-      "base64"
-    )}`;
+    for (const [key, file] of formData.entries()) {
+      if (file instanceof File) {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        const dataURI = `data:${file.type};base64,${buffer.toString('base64')}`;
+        
+        const result = await cloudinary.uploader.upload(dataURI, {
+          folder: 'user-documents',
+          resource_type: 'auto',
+        });
 
-    const result = await cloudinary.uploader.upload(base64String, {
-      folder: "customer-docs",
-    });
+        urls[key] = result.secure_url;
+      }
+    }
 
-    return NextResponse.json({
-      success: true,
-      public_id: result.public_id,
-    });
+    return NextResponse.json({ success: true, urls });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error('Upload error:', error);
     return NextResponse.json(
-      { success: false, message: "Upload failed" },
+      { success: false, message: 'Failed to upload files' },
       { status: 500 }
     );
   }

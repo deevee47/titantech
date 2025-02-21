@@ -139,6 +139,7 @@ const OnboardCustomer = () => {
               onPrevious={handlePrevious}
               isFinalStep={currentStep === 4}
               meetingScheduled={meetingScheduled}
+              onSubmit={onboarding.handleSubmit} // Add this line
             />
           </CardContent>
         </Card>

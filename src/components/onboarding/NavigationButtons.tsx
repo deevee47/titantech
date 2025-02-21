@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 
-export const NavigationButtons = ({
-  currentStep,
-  acceptedTerms,
-  loading,
-  onNext,
-  onPrevious,
-  isFinalStep,
-  meetingScheduled,
-}: {
+interface NavigationButtonsProps {
   currentStep: number;
   acceptedTerms: boolean;
   loading: boolean;
@@ -17,8 +9,28 @@ export const NavigationButtons = ({
   onPrevious: () => void;
   isFinalStep: boolean;
   meetingScheduled: boolean;
+  onSubmit?: () => Promise<void>; // Make it optional
+}
+
+export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
+  currentStep,
+  acceptedTerms,
+  loading,
+  onNext,
+  onPrevious,
+  isFinalStep,
+  meetingScheduled,
+  onSubmit,
 }) => {
   const [checked, setChecked] = useState(false);
+
+  const handleNext = async () => {
+    if (isFinalStep && onSubmit) {
+      await onSubmit();
+    } else {
+      onNext();
+    }
+  };
 
   return (
     <div className="flex flex-col space-y-4 pt-4">
@@ -45,20 +57,20 @@ export const NavigationButtons = ({
       <div className="flex justify-between space-x-4">
         <Button
           onClick={onPrevious}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || loading}
           variant="outline"
           className="w-full bg-transparent border-white/10 text-white hover:bg-white/5 transition-colors px-8 py-6 text-sm font-normal"
         >
           Previous
         </Button>
         <Button
-          onClick={onNext}
-          disabled={isFinalStep && !checked}
+          onClick={handleNext}
+          disabled={(isFinalStep && !checked) || loading}
           className={`w-full bg-white text-black hover:bg-gray-100 transition-colors px-8 py-6 text-sm font-normal ${
-            isFinalStep && !checked ? "opacity-50 cursor-not-allowed" : ""
+            loading ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
-          {isFinalStep ? "Complete" : "Next"}
+          {loading ? "Processing..." : isFinalStep ? "Complete" : "Next"}
         </Button>
       </div>
     </div>
