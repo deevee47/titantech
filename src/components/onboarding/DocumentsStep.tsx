@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
+import {toast} from "@/hooks/use-toast";
 interface DocumentsStepProps {
   userData: {
     investmentAmount: string;
@@ -27,6 +27,39 @@ interface DocumentsStepProps {
     [key: string]: string | undefined;
   };
 }
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.match(/^(image\/.*|application\/pdf)$/)) {
+    toast({
+      title: "Invalid file type",
+      description: "Please upload only PDF or image files",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Validate file size (5MB limit)
+  if (file.size > 5 * 1024 * 1024) {
+    toast({
+      title: "File too large",
+      description: "Please upload files smaller than 5MB",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setUserData(prev => ({ ...prev, [field]: file }));
+  setFileNames(prev => ({ ...prev, [field]: file.name }));
+  
+  // Clear any previous errors for this field
+  if (errors[field]) {
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  }
+};
 
 const DocumentsStep: React.FC<DocumentsStepProps> = ({
   userData,

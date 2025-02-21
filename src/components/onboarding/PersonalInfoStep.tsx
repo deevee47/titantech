@@ -52,6 +52,20 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
     }
   }, [userData.country, userData.state, availableStates]);
 
+  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+    if (value.length <= 10) { // Only allow up to 10 digits
+      handleInputChange({
+        ...e,
+        target: {
+          ...e.target,
+          value,
+          name: 'phone'
+        }
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
@@ -102,7 +116,10 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
             id="phone"
             name="phone"
             value={userData.phone}
-            onChange={handleInputChange}
+            onChange={handlePhoneInput}
+            maxLength={10}
+            inputMode="numeric"
+            pattern="[0-9]*"
             placeholder="1234567890"
             className={`bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-gray-500 focus:bg-white/5 ${
               errors.phone ? "border-red-500" : ""
@@ -153,40 +170,15 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
       </div>
 
       <div className="space-y-4">
-        <Label className="text-gray-300">
+        <Label className="text-gray-300 text-2xl font-bold">
           Address Details <span className="text-red-500">*</span>
         </Label>
         
-        {/* Country dropdown */}
+        {/* Street Address */}
         <div className="space-y-2">
-          <Label htmlFor="country" className="text-gray-300">
-            Country <span className="text-red-500">*</span>
+          <Label htmlFor="streetAddress" className="text-gray-300">
+            Street Address <span className="text-red-500">*</span>
           </Label>
-          <Select 
-            value={userData.country} 
-            onValueChange={(value) => handleSelectChange("country", value)}
-          >
-            <SelectTrigger
-              className={`bg-white/5 backdrop-blur-sm border-white/10 text-white focus:bg-white/5 ${
-                errors.country ? "border-red-500" : ""
-              }`}
-            >
-              <SelectValue placeholder="Select country" />
-            </SelectTrigger>
-            <SelectContent className="bg-black/90 backdrop-blur-md border-white/10 text-white max-h-64 overflow-y-auto">
-              {countries.map((country) => (
-                <SelectItem key={country} value={country} className="text-white focus:bg-white/10 focus:text-white">
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.country && (
-            <p className="text-sm text-red-500 mt-1">{errors.country}</p>
-          )}
-        </div>
-        
-        <div className="space-y-2">
           <Textarea
             id="streetAddress"
             name="streetAddress"
@@ -201,26 +193,41 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
             <p className="text-sm text-red-500 mt-1">{errors.streetAddress}</p>
           )}
         </div>
-        
+
+        {/* Country and State row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Input
-              id="city"
-              name="city"
-              value={userData.city}
-              onChange={handleInputChange}
-              placeholder="City"
-              className={`bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-gray-500 focus:bg-white/5 ${
-                errors.city ? "border-red-500" : ""
-              }`}
-            />
-            {errors.city && (
-              <p className="text-sm text-red-500 mt-1">{errors.city}</p>
+            <Label htmlFor="country" className="text-gray-300">
+              Country <span className="text-red-500">*</span>
+            </Label>
+            <Select 
+              value={userData.country} 
+              onValueChange={(value) => handleSelectChange("country", value)}
+            >
+              <SelectTrigger
+                className={`bg-white/5 backdrop-blur-sm border-white/10 text-white focus:bg-white/5 ${
+                  errors.country ? "border-red-500" : ""
+                }`}
+              >
+                <SelectValue placeholder="Select country" />
+              </SelectTrigger>
+              <SelectContent className="bg-black/90 backdrop-blur-md border-white/10 text-white max-h-64 overflow-y-auto">
+                {countries.map((country) => (
+                  <SelectItem key={country} value={country} className="text-white focus:bg-white/10 focus:text-white">
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.country && (
+              <p className="text-sm text-red-500 mt-1">{errors.country}</p>
             )}
           </div>
           
-          {/* Dynamic State dropdown */}
           <div className="space-y-2">
+            <Label htmlFor="state" className="text-gray-300">
+              State <span className="text-red-500">*</span>
+            </Label>
             <Select 
               value={userData.state} 
               onValueChange={(value) => handleSelectChange("state", value)}
@@ -252,21 +259,46 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({
             )}
           </div>
         </div>
-        
-        <div className="w-1/2">
-          <Input
-            id="pincode"
-            name="pincode"
-            value={userData.pincode}
-            onChange={handleInputChange}
-            placeholder="PIN/ZIP Code"
-            className={`bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-gray-500 focus:bg-white/5 ${
-              errors.pincode ? "border-red-500" : ""
-            }`}
-          />
-          {errors.pincode && (
-            <p className="text-sm text-red-500 mt-1">{errors.pincode}</p>
-          )}
+
+        {/* City and ZIP/PIN Code row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="city" className="text-gray-300">
+              City <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="city"
+              name="city"
+              value={userData.city}
+              onChange={handleInputChange}
+              placeholder="City"
+              className={`bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-gray-500 focus:bg-white/5 ${
+                errors.city ? "border-red-500" : ""
+              }`}
+            />
+            {errors.city && (
+              <p className="text-sm text-red-500 mt-1">{errors.city}</p>
+            )}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="pincode" className="text-gray-300">
+              ZIP/PIN Code <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="pincode"
+              name="pincode"
+              value={userData.pincode}
+              onChange={handleInputChange}
+              placeholder="PIN/ZIP Code"
+              className={`bg-white/5 backdrop-blur-sm border-white/10 text-white placeholder:text-gray-500 focus:bg-white/5 ${
+                errors.pincode ? "border-red-500" : ""
+              }`}
+            />
+            {errors.pincode && (
+              <p className="text-sm text-red-500 mt-1">{errors.pincode}</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

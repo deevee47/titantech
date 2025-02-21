@@ -15,7 +15,7 @@ import { WelcomeScreen } from './WelcomeScreen';
 
 const OnboardCustomer = () => {
   const onboarding = useOnboarding();
-  const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   if (showWelcome) {
     return <WelcomeScreen onContinue={() => setShowWelcome(false)} />;
   }
@@ -89,14 +89,14 @@ const OnboardCustomer = () => {
       
       <div className="relative z-10 py-8 px-4">
         <Card className="max-w-2xl mx-auto bg-black/40 backdrop-blur-md border border-white/10">
-          <CardHeader className="space-y-1">
+          <CardHeader className="space-y-3">
             <CardTitle className="text-3xl font-bold text-center text-white">
               {stepTitles[currentStep as keyof typeof stepTitles]}
             </CardTitle>
             <StepIndicator currentStep={currentStep} totalSteps={4} />
           </CardHeader>
           
-          <CardContent className="space-y-6 flex items-center justify-center flex-col">
+          <CardContent className="px-6 py-3">
             {currentStep === 1 && (
               <PersonalInfoStep
                 userData={userData}
@@ -139,6 +139,7 @@ const OnboardCustomer = () => {
               onPrevious={handlePrevious}
               isFinalStep={currentStep === 4}
               meetingScheduled={meetingScheduled}
+              onSubmit={onboarding.handleSubmit} // Add this line
             />
           </CardContent>
         </Card>

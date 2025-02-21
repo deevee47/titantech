@@ -9,6 +9,7 @@ import { User, SortField, EditState } from "@/types/user";
 import SearchFilters from "./user/SearchFilter";
 import TablePagination from "./user/TablePaginantion";
 import UsersTable from "./user/UsersTable";
+import Image from "next/image";
 
 export default function UserTable() {
   // State
@@ -41,9 +42,9 @@ export default function UserTable() {
           response.data.users.map((user: any) => ({
             ...user,
             createdAt: user.createdAt.toISOString(),
-            aadharFrontUrl: user.aadharFrontUrl || '',
-            aadharBackUrl: user.aadharBackUrl || '',
-            panCardUrl: user.panCardUrl || ''
+            aadharFrontUrl: user.aadharFrontUrl || "",
+            aadharBackUrl: user.aadharBackUrl || "",
+            panCardUrl: user.panCardUrl || "",
           }))
         );
         setTotalItems(response.data.metadata.total);
@@ -120,7 +121,7 @@ export default function UserTable() {
     if (editingRemark) {
       setEditingRemark({
         ...editingRemark,
-        value
+        value,
       });
     }
   };
@@ -129,7 +130,13 @@ export default function UserTable() {
     <div className="min-h-screen bg-transparent relative overflow-hidden">
       <div className="relative z-10 p-8 space-y-6">
         <h1 className="text-3xl font-bold text-white mb-8">User Management</h1>
-
+        <Image
+          className="absolute z-10 top-2 right-10"
+          src="/secondarylogo.svg"
+          alt="Logo"
+          width={80}
+          height={80}
+        />
         {/* Search and Filters */}
         <SearchFilters
           onSearch={handleSearch}
@@ -193,19 +200,6 @@ export default function UserTable() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // "use client";
 
