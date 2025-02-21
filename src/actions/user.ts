@@ -31,11 +31,8 @@ export async function createUser(data: User) {
       };
     }
 
-    // Extract data from the first element if it's wrapped in an array
-    const userData = Array.isArray(data) ? data[0] : data;
-
     // Basic validation
-    if (!userData.firstName || !userData.lastName || !userData.phone || !userData.email) {
+    if (!data.firstName || !data.lastName || !data.phone || !data.email) {
       return {
         success: false,
         message: "Required fields are missing",
@@ -43,23 +40,23 @@ export async function createUser(data: User) {
       };
     }
 
-    // Create user in database with required calendlyLink
+    // Create user in database
     const user = await prisma.user.create({
       data: {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        phone: userData.phone,
-        email: userData.email,
-        companyName: userData.companyName,
-        address: userData.address,
-        aadharFrontUrl: userData.aadharFrontUrl,
-        aadharBackUrl: userData.aadharBackUrl,
-        panCardUrl: userData.panCardUrl,
-        calendlyLink: "https://calendly.com/default", // Add a default or generate dynamic link
-        investmentAmount: userData.investmentAmount,
-        paymentDone: false,
-        remark: null,
-        customerNote: userData.customerNote || null,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        email: data.email,
+        companyName: data.companyName,
+        address: data.address,
+        aadharFrontUrl: data.aadharFrontUrl,
+        aadharBackUrl: data.aadharBackUrl,
+        panCardUrl: data.panCardUrl,
+        calendlyLink: data.calendlyLink || "https://calendly.com/default",
+        investmentAmount: data.investmentAmount,
+        paymentDone: data.paymentDone || false,
+        remark: data.remark || null,
+        customerNote: data.customerNote || null,
       },
     });
 
