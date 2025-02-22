@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import cloudinary from "@/lib/cloudinary";
 
+type RouteParams = {
+  params: Promise<{ id: string[] }> & { id: string[] };
+};
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string[] } }
+  { params }: RouteParams
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const imageId = id.join("/");
 
     const signedUrl = cloudinary.url(imageId, {

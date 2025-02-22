@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { createUser } from "@/actions/user";
 import { UserData, ValidationErrors, FileNames } from '@/types/onboarding';
+
 async function uploadFiles(formData: FormData) {
   try {
     const response = await fetch('/api/upload', {
@@ -27,6 +28,7 @@ async function uploadFiles(formData: FormData) {
     };
   }
 }
+
 export const useOnboarding = () => {
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -78,20 +80,33 @@ export const useOnboarding = () => {
     field: string
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload only PDF or image files",
-          variant: "destructive",
-        });
-        return;
-      }
-      setUserData(prev => ({ ...prev, [field]: file }));
-      setFileNames(prev => ({ ...prev, [field]: file.name }));
-      if (errors[field as keyof UserData]) {
-        setErrors(prev => ({ ...prev, [field]: undefined }));
-      }
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.match(/^(image\/.*|application\/pdf)$/)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload only PDF or image files",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload files smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUserData(prev => ({ ...prev, [field]: file }));
+    setFileNames(prev => ({ ...prev, [field]: file.name }));
+    
+    if (errors[field as keyof UserData]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -179,6 +194,6 @@ export const useOnboarding = () => {
     handleInputChange,
     handleSelectChange,
     handleFileChange,
-    handleSubmit, // Make sure this is included in the return object
+    handleSubmit,
   };
 };

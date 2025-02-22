@@ -52,11 +52,12 @@ export async function createUser(data: User) {
         aadharFrontUrl: data.aadharFrontUrl,
         aadharBackUrl: data.aadharBackUrl,
         panCardUrl: data.panCardUrl,
-        calendlyLink: data.calendlyLink || "https://calendly.com/default",
+        calendlyLink: data.calendlyLink || "", // Changed from calendlyUrl
         investmentAmount: data.investmentAmount,
         paymentDone: data.paymentDone || false,
         remark: data.remark || null,
-        customerNote: data.customerNote || null,
+        customerNote: data.customerNote || null
+        // Remove createdAt and updatedAt as they're handled by Prisma
       },
     });
 
@@ -69,7 +70,7 @@ export async function createUser(data: User) {
   } catch (error: any) {
     console.error("Error creating user:", error);
     return {
-      success: false,
+      success: false, 
       message: "Failed to create user",
       error: error.message,
     };

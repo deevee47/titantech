@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { FC } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useOnboarding } from '@/hooks/useOnboarding';
@@ -14,9 +14,11 @@ import { BackgroundBlobs } from './BackgroundBlobs';
 import { WelcomeScreen } from './WelcomeScreen';
 import { useRouter } from 'next/navigation';
 
-const OnboardCustomer = () => {
+interface OnboardCustomerProps {} // Empty interface since component doesn't need props
+
+export const OnboardCustomer: FC<OnboardCustomerProps> = () => {
   const onboarding = useOnboarding();
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = React.useState(true);
   const router = useRouter();
 
   if (showWelcome) {
@@ -36,6 +38,7 @@ const OnboardCustomer = () => {
     handleFileChange,
     setMeetingScheduled,
     setAcceptedTerms,
+    errors,
   } = onboarding;
 
   const stepTitles = {
@@ -111,7 +114,7 @@ const OnboardCustomer = () => {
                 userData={userData}
                 handleInputChange={handleInputChange}
                 handleSelectChange={handleSelectChange}
-                errors={onboarding.errors}
+                errors={errors}
               />
             )}
             {currentStep === 2 && (
@@ -120,7 +123,7 @@ const OnboardCustomer = () => {
                 fileNames={fileNames}
                 handleInputChange={handleInputChange}
                 handleFileChange={handleFileChange}
-                errors={onboarding.errors}
+                errors={errors}
               />
             )}
             {currentStep === 3 && (
