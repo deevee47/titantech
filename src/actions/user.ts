@@ -63,7 +63,7 @@ export async function createUser(data: User) {
 
     return {
       success: true,
-      message: "User created successfully",
+      message: "User created successfully :)",
       user,
     };
 
