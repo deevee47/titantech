@@ -12,13 +12,17 @@ import StepIndicator from "@/components/onboarding/StepIndicator";
 import { NavigationButtons } from './NavigationButtons';
 import { BackgroundBlobs } from './BackgroundBlobs';
 import { WelcomeScreen } from './WelcomeScreen';
+import { useRouter } from 'next/navigation';
 
 const OnboardCustomer = () => {
   const onboarding = useOnboarding();
   const [showWelcome, setShowWelcome] = useState(true);
+  const router = useRouter();
+
   if (showWelcome) {
     return <WelcomeScreen onContinue={() => setShowWelcome(false)} />;
   }
+
   const {
     currentStep,
     acceptedTerms,
@@ -83,6 +87,11 @@ const OnboardCustomer = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    await onboarding.handleSubmit();
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <BackgroundBlobs />
@@ -139,28 +148,11 @@ const OnboardCustomer = () => {
               onPrevious={handlePrevious}
               isFinalStep={currentStep === 4}
               meetingScheduled={meetingScheduled}
-              onSubmit={onboarding.handleSubmit} // Add this line
+              onSubmit={handleSubmit}
             />
           </CardContent>
         </Card>
       </div>
-
-      <style jsx global>{`
-        @keyframes blob1 {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.2); }
-        }
-        @keyframes blob2 {
-          0%, 100% { transform: translate(-50%, -50%) scale(1.2); }
-          50% { transform: translate(-50%, -50%) scale(1); }
-        }
-        .calendly-inline-widget,
-        .calendly-popup-overlay,
-        .calendly-widget-inline,
-        .calendly-overlay {
-          z-index: 1100 !important;
-        }
-      `}</style>
     </div>
   );
 };
